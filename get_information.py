@@ -76,10 +76,10 @@ def make_list(soup, number):
 def get_by_moviecode(moviecode):
     movieurl = f"https://movie.naver.com/movie/bi/mi/basic.nhn?code={moviecode}"
     soup = BeautifulSoup(get_source(movieurl), "lxml")
-    a = get_movie_info(soup)
+    a = get_movie_info(moviecode, soup)
     return a
 
-def get_movie_info(soup):
+def get_movie_info(moviecode, soup):
     #이름
     kor_nm = soup.find('h3', 'h_movie').find("a").get_text()
     tempengname = soup.find_all('strong', 'h_movie2')[1].get_text()
@@ -140,18 +140,18 @@ def get_movie_info(soup):
         actordict.update({actor_code : actor})
 
     #관람등급
-    flim_class = soup.find("dl", "info_spec").find_all("dd")[3].find('a').get_text()
+    try:
+        flim_class = soup.find("dl", "info_spec").find_all("dd")[3].find('a').get_text()
+    except:
+        flim_class = None
 
-    #누적관람객
-    viewer_count = soup.find("dl", "info_spec").find_all("dd")[4].find(class_='count').get_text().split("명")[0].replace(",","")
-
+    print(moviecode)
     print(kor_nm, eng_nm, produce_year, viewer_score, giza_score, ntz_score )
     print(genre_list)
     print(nation_list)
     print(director)
     print(directorcode)
     print(flim_class)
-    print(viewer_count)
     print(actordict)
     print(list(actordict.keys()))
     print(story)
