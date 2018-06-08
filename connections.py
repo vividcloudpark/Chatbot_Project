@@ -32,7 +32,8 @@ def initialize():
     curs.execute("SET FOREIGN_KEY_CHECKS = 0;")
     curs.close()
     curs = cursor()[0]
-    delete = '''TRUNCATE TABLE BaseMovieInfo'''
+    # delete = '''TRUNCATE TABLE BaseMovieInfo'''
+    delete = '''DELETE FROM BaseMovieInfo'''
     curs.execute(delete)
     curs.close()
     curs = cursor()[0]
