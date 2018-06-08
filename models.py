@@ -7,13 +7,14 @@ import json
 import pymysql
 
 Base = declarative_base()
-
-DirectorOfMovie = Table('DirectorOfMovie', Base.metadata,
-Column('movie_director_code', String(10), Foreignkey("Director.director_code")),
-Column('movie_code', String(10), ForeignKey('BaseMovieInfo.movie_code')))
-
-ActorsOfMovie = Table('ActorsOfMovie', Base.metadata, Column('movie_code', string(10), ForeignKey("BaseMovieInfo.movie_code")),
-Column('movie_actor_code', string(10), Foreginkey('Actors.actor_code')))
+#
+# DirectorOfMovie = Table('DirectorOfMovie', Base.metadata,
+# Column('movie_director_code', String(10), ForeignKey("Director.director_code")),
+# Column('movie_code', String(10), ForeignKey('BaseMovieInfo.movie_code')))
+#
+#
+# ActorsOfMovie = Table('ActorsOfMovie', Base.metadata, Column('movie_code', String(10), ForeignKey("BaseMovieInfo.movie_code")),
+# Column('movie_actor_code', String(10), ForeignKey('Actors.actor_code')))
 
 
 class BaseMovieInfo(Base):
@@ -83,27 +84,27 @@ class MovieScore(Base):
         self.ntz_score = ntz_score
 
 
-# class DirectorOfMovie(Base):
-#     __tablename__ = 'DirectorOfMovie'
-#
-#     index = Column(Integer, primary_key = True)
-#     movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code'))
-#     movie_director_code = Column(String(10), ForeignKey('Director.director_code'))
-#
-#
-#     moviecode_connetion = relationship("BaseMovieInfo", backref = "DirectorOfMovie")
-#     directorcode_connection = relationship("Director", backref = "DirectorOfMovie")
-#
-#
-#     # __table_args__ =(
-#     # ForeignKeyConstraint(
-#     # ['movie_code', 'movie_director_code'],
-#     # ['BaseMovieInfo.movie_code', 'Director.director_code'],
-#     # onupdate="CASCADE", ondelete="CASCADE"),)
-#
-#     def __init__(self, movie_code, movie_director_code):
-#         self.movie_code = movie_code
-#         self.movie_director_code = movie_director_code
+class DirectorOfMovie(Base):
+    __tablename__ = 'DirectorOfMovie'
+
+    index = Column(Integer, primary_key = True)
+    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code'))
+    movie_director_code = Column(String(10), ForeignKey('Director.director_code'))
+
+
+    director_moviecode_connetion = relationship("BaseMovieInfo", backref = "DirectorOfMovie")
+    directorcode_connection = relationship("Director", backref = "DirectorOfMovie")
+
+
+    # __table_args__ =(
+    # ForeignKeyConstraint(
+    # ['movie_code', 'movie_director_code'],
+    # ['BaseMovieInfo.movie_code', 'Director.director_code'],
+    # onupdate="CASCADE", ondelete="CASCADE"),)
+
+    def __init__(self, movie_code, movie_director_code):
+        self.movie_code = movie_code
+        self.movie_director_code = movie_director_code
 
 
 class Director(Base):
@@ -115,25 +116,25 @@ class Director(Base):
         self.director_code = director_code
         self.director_name_kor = director_name_kor
 
-# class ActorsOfMovie(Base):
-#     __tablename__ = 'ActorsOfMovie'
-#     index = Column(Integer, primary_key = True)
-#     movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code'))
-#     movie_actor_code = Column(String(50), ForeignKey('Actors.actor_code'))
-#
-#
-#     moviecode_connetion = relationship("BaseMovieInfo", backref = "DirectorOfMovie")
-#     actorcode_connection = relationship("Actors", backref = "DirectorOfMovie")
-#
-#     # __table_args__ =(
-#     # ForeignKeyConstraint(
-#     # ['movie_code', 'movie_actor_code'],
-#     # ['BaseMovieInfo.movie_code', 'Actors.actor_code'],
-#     # onupdate="CASCADE", ondelete="CASCADE"),)
-    #
-    # def __init__(self, movie_code, movie_actor_code):
-    #     self.movie_code = movie_code
-    #     self.movie_actor_code = movie_actor_code
+class ActorsOfMovie(Base):
+    __tablename__ = 'ActorsOfMovie'
+    index = Column(Integer, primary_key = True)
+    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code'))
+    movie_actor_code = Column(String(50), ForeignKey('Actors.actor_code'))
+
+
+    actor_moviecode_connetion = relationship("BaseMovieInfo", backref = "ActorsOfMovie")
+    actorcode_connection = relationship("Actors", backref = "ActorsOfMovie")
+
+    # __table_args__ =(
+    # ForeignKeyConstraint(
+    # ['movie_code', 'movie_actor_code'],
+    # ['BaseMovieInfo.movie_code', 'Actors.actor_code'],
+    # onupdate="CASCADE", ondelete="CASCADE"),)
+
+    def __init__(self, movie_code, movie_actor_code):
+        self.movie_code = movie_code
+        self.movie_actor_code = movie_actor_code
 
 class Actors(Base):
     __tablename__ = 'Actors'
