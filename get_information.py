@@ -1,8 +1,9 @@
-
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import lxml
-
+import json
+import connections as cnnt
+from models import *
 
 
 def get_source(url):
@@ -72,7 +73,6 @@ def make_list(soup, number):
     return textlist
 
 
-
 def get_by_moviecode(moviecode):
     movieurl = f"https://movie.naver.com/movie/bi/mi/basic.nhn?code={moviecode}"
     soup = BeautifulSoup(get_source(movieurl), "lxml")
@@ -84,8 +84,8 @@ def get_movie_info(moviecode, soup):
     kor_nm = soup.find('h3', 'h_movie').find("a").get_text()
     tempengname = soup.find_all('strong', 'h_movie2')[1].get_text()
     if len(tempengname)>45:
-        eng_nm = "TOO LONG"
-        produce_year = "Too LONG"
+        eng_nm = None
+        produce_year = None
     else:
         eng_nm = tempengname[:-6]
         produce_year = tempengname[-4:]
@@ -145,18 +145,23 @@ def get_movie_info(moviecode, soup):
     except:
         flim_class = None
 
-    print(moviecode)
-    print(kor_nm, eng_nm, produce_year, viewer_score, giza_score, ntz_score )
-    print(genre_list)
-    print(nation_list)
-    print(director)
-    print(directorcode)
-    print(flim_class)
-    print(actordict)
-    print(list(actordict.keys()))
-    print(story)
-    print(story_detail)
+    curs, engine, session = cnnt.cursor()
 
+
+    print("akay1")
+    a = BaseMovieInfo(moviecode, kor_nm)
+    b = DetailedBaseMovieInfo(moviecode, eng_nm, produce_year, genre_list, nation_list, flim_class, story, story_detail)
+    c = MovieScore(moviecode, viewer_score, giza_score, ntz_score)
+    d = DirectorOfMovie(moviecode, directorcode)
+    e = Director(directorcode, director)
+    f = ActorsOfMovie(moviecode, list(actordict.keys()))
+    g = Actors(actordict, actordict.values())
+
+    session.merge(a)
+    session.merge(b)
+    session.commit()
+    session.close()
+    print("akay")
 # 추가될정보
 # 1.장르정보
 # 2.국가정보
@@ -176,9 +181,10 @@ def get_movie_info(moviecode, soup):
 def get_by_peoplecode(peoplecode):
     peopleurl = f"https://movie.naver.com/movie/bi/pi/basic.nhn?code={peoplecode}"
     soup = BeautifulSoup(get_source(peopleurl), "lxml") # 파싱할 문서를 BeautifulSoup 클래스의 생성자에 넘겨주어 문서 개체를 생성, 관습적으로 soup 이라 부름
+    a = get_people_info(peoplecode, soup)
     return soup
 
-def get_people_info(soup):
+def get_people_info(peoplecode, soup):
     infobox = soup.find(class_="mv_info character")
     people_name = infobox.a.get_text()
     people_link = get_code(infobox.a.get('href'))
@@ -197,7 +203,7 @@ def get_people_info(soup):
             ntz_score = i.find(class_="star_score").get_text()
             ntz_score = delete_exceptioanl_text(ntz_score)
         else:
-            ntz_score = "개봉예정작"
+            ntz_score = None
 
         print(movie_code, kor_nm, ntz_score)
 

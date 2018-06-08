@@ -1,0 +1,3 @@
+{"users":[
+  {"user":"root", "password":"1234", "host":"localhost","port":"3306", "DB":"DBtoday","kobis_key":"430156241533f1d058c603178cc3ca0e"}
+  ]}
