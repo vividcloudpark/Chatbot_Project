@@ -13,32 +13,28 @@ class BaseMovieInfo(Base):
     __tablename__ = 'BaseMovieInfo'
     movie_code = Column(String(10), primary_key = True,  nullable=False)
     movie_name_kor = Column(String(50), nullable=False)
+
     UniqueConstraint('movie_code', name='code_should_unique')
 
-    def __init__(self, movie_code, movie_name_kor):
+    def __init__(self, movie_code, movie_name_kor ):
         self.movie_code =movie_code
         self.movie_name_kor =movie_name_kor
 
+
 class DetailedBaseMovieInfo(Base):
     __tablename__ = 'DetailedBaseMovieInfo'
-    index = Column(Integer, primary_key = True)
-    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"),primary_key = True)
+    opendate = Column(Date)
     movie_name_eng = Column(String(100), nullable=True)
     produce_year = Column(String(5), nullable=True)
-    genre_list = Column(String(255), nullable=True)
-    nation_list = Column(String(100),  nullable=True)
     flim_class = Column(String(100), nullable=True)
     story = Column(Text, nullable=True)
     story_detail = Column(Text,  nullable=True)
-
-
-
-    def __init__(self, movie_code, movie_name_eng, produce_year, genre_list, nation_list, flim_class, story, story_detail):
+    def __init__(self,  movie_code, opendate, movie_name_eng, produce_year, flim_class, story, story_detail):
         self.movie_code = movie_code
+        self.opendate =opendate
         self.movie_name_eng = movie_name_eng
         self.produce_year = produce_year
-        self.genre_list = genre_list
-        self.nation_list = nation_list
         self.flim_class = flim_class
         self.story = story
         self.story_detail = story_detail
@@ -46,9 +42,7 @@ class DetailedBaseMovieInfo(Base):
 
 class MovieScore(Base):
     __tablename__ = 'MovieScore'
-
-    index = Column(Integer, primary_key = True)
-    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"), primary_key = True)
     viewer_score = Column(Float, nullable=True)
     giza_score = Column(Float, nullable=True)
     ntz_score = Column(Float, nullable=True)
@@ -59,24 +53,42 @@ class MovieScore(Base):
         self.giza_score = giza_score
         self.ntz_score = ntz_score
 
+class GenreOfMovie(Base):
+    __tablename__ = 'GenreOfMovie'
+    index = Column(Integer, primary_key = True)
+    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_genre = Column(String(20), ForeignKey('Genre.genre', onupdate="CASCADE", ondelete="CASCADE"))
+    def __init__(self, movie_code, movie_genre):
+        self.movie_code = movie_code
+        self.movie_genre = movie_genre
+
+class Genre(Base):
+    __tablename__ = 'Genre'
+    genre = Column(String(20), primary_key = True, unique=True)
+    def __init__(self, genre):
+        self.genre = genre
+
+class NationOfMovie(Base):
+    __tablename__ = 'NationOfMovie'
+    index = Column(Integer, primary_key = True)
+    movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_nation = Column(String(20), ForeignKey('Nations.nations', onupdate="CASCADE", ondelete="CASCADE"))
+    def __init__(self, movie_code, movie_genre):
+        self.movie_code = movie_code
+        self.movie_genre = movie_genre
+
+class Nations(Base):
+    __tablename__ = 'Nations'
+    nations = Column(String(20), primary_key = True, unique=True)
+    def __init__(self, nations):
+        self.nations = nations
+
 
 class DirectorOfMovie(Base):
     __tablename__ = 'DirectorOfMovie'
-
     index = Column(Integer, primary_key = True)
     movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
     movie_director_code = Column(String(10), ForeignKey('Director.director_code', onupdate="CASCADE", ondelete="CASCADE"))
-
-
-    # director_moviecode_connetion = relationship("BaseMovieInfo", backref = "DirectorOfMovie")
-    # directorcode_connection = relationship("Director", backref = "DirectorOfMovie")
-
-
-    # __table_args__ =(
-    # ForeignKeyConstraint(
-    # ['movie_code', 'movie_director_code'],
-    # ['BaseMovieInfo.movie_code', 'Director.director_code'],
-    # onupdate="CASCADE", ondelete="CASCADE"),)
 
     def __init__(self, movie_code, movie_director_code):
         self.movie_code = movie_code
@@ -97,16 +109,6 @@ class ActorsOfMovie(Base):
     index = Column(Integer, primary_key = True)
     movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
     movie_actor_code = Column(String(50), ForeignKey('Actors.actor_code', onupdate="CASCADE", ondelete="CASCADE"))
-
-
-    # actor_moviecode_connetion = relationship("BaseMovieInfo", backref = "ActorsOfMovie")
-    # actorcode_connection = relationship("Actors", backref = "ActorsOfMovie")
-
-    # __table_args__ =(
-    # ForeignKeyConstraint(
-    # ['movie_code', 'movie_actor_code'],
-    # ['BaseMovieInfo.movie_code', 'Actors.actor_code'],
-    # onupdate="CASCADE", ondelete="CASCADE"),)
 
     def __init__(self, movie_code, movie_actor_code):
         self.movie_code = movie_code

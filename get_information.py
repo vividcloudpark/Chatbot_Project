@@ -4,6 +4,7 @@ import lxml
 import json
 import connections as cnnt
 from models import *
+import datetime
 
 
 def get_source(url):
@@ -18,7 +19,10 @@ def score(soup,i):
     for i in res:
         viewer_score.append(i.get_text())
     a = "".join(viewer_score)
-    return a
+    if len(a) != 0:
+        return a
+    else:
+        return 0.00
 
 def get_code(link):
     a = link.split("=")
@@ -60,7 +64,6 @@ def make_craw_list():
         temp_opendate = delete_exceptioanl_text(res[i].find("dl", "info_txt1").find("dd").get_text()).split("|")[-1]
         opendate = temp_opendate.replace(" 개봉", "")
         to_craw_list.append(moviecode)
-        # print(moviecode,moviename,opendate) < DB에 삽입
     return to_craw_list
 
 
@@ -84,8 +87,8 @@ def get_movie_info(moviecode, soup):
     kor_nm = soup.find('h3', 'h_movie').find("a").get_text()
     tempengname = soup.find_all('strong', 'h_movie2')[1].get_text()
     if len(tempengname)>45:
-        eng_nm = None
-        produce_year = None
+        eng_nm = tempengname[:45]
+        produce_year = 9999
     else:
         eng_nm = tempengname[:-6]
         produce_year = tempengname[-4:]
@@ -125,6 +128,7 @@ def get_movie_info(moviecode, soup):
 
     #개봉일
     open_date = "".join(make_list(soup, 3)).lstrip()
+    open_date = datetime.datetime.strptime(open_date, '%Y.%m.%d').date()
 
     #감독
     director = soup.find("dl", "info_spec").find_all("dd")[1].get_text()
@@ -147,21 +151,42 @@ def get_movie_info(moviecode, soup):
 
     curs, engine, session = cnnt.cursor()
 
+    # pk들 넣기
+    codeofmovie = BaseMovieInfo(moviecode, kor_nm)
+    session.merge(codeofmovie)
+    codeofdirector = Director(directorcode, director)
+    session.merge(codeofdirector)
+    for actorcode in actordict:
+        c = Actors(actorcode, actordict[actorcode])
+        session.merge(c)
+    for genre in genre_list:
+        genrecode = Genre(genre)
+        session.merge(genrecode)
+    for nation in nation_list:
+        nations = Nations(nation)
+        session.merge(nations)
+    session.commit()
 
-    print("akay1")
-    a = BaseMovieInfo(moviecode, kor_nm)
-    b = DetailedBaseMovieInfo(moviecode, eng_nm, produce_year, genre_list, nation_list, flim_class, story, story_detail)
-    c = MovieScore(moviecode, viewer_score, giza_score, ntz_score)
-    d = DirectorOfMovie(moviecode, directorcode)
-    e = Director(directorcode, director)
-    f = ActorsOfMovie(moviecode, list(actordict.keys()))
-    g = Actors(actordict, actordict.values())
+    for actorcode in actordict:
+        movieandactor = ActorsOfMovie(moviecode, actorcode)
+        session.merge(movieandactor)
+    for genre in genre_list:
+        movieandgenre = GenreOfMovie(moviecode, genre)
+        session.merge(movieandgenre)
+    for nation in nation_list:
+        movieandnation = NationOfMovie(moviecode, nation)
+    session.commit()
 
-    session.merge(a)
-    session.merge(b)
+    moviescore = MovieScore(moviecode, viewer_score, giza_score, ntz_score)
+    directorandmovie = DirectorOfMovie(moviecode, directorcode)
+    detail = DetailedBaseMovieInfo(moviecode, open_date, eng_nm, produce_year, flim_class, story, story_detail)
+
+    session.merge(moviescore)
+    session.merge(directorandmovie)
+    session.merge(detail)
     session.commit()
     session.close()
-    print("akay")
+    print("데이터베이스에 저장 완료!")
 # 추가될정보
 # 1.장르정보
 # 2.국가정보
