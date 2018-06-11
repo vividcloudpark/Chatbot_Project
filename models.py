@@ -124,10 +124,11 @@ class Actors(Base):
 
 class KobisMovieInfo(Base):
     __tablename__ = 'KobisMovieInfo'
-    index = Column(Integer, primary_key = True)
+    index = Column(Integer, primary_key = True, autoincrement=True)
     movie_name = Column(String(50), primary_key = True)
     search_date = Column(Date)
     today_audi = Column(Integer)
+    
     def __init__(self,movie_name,search_date,today_audi):
         self.movie_name =movie_name
         self.search_date =search_date
