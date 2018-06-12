@@ -22,8 +22,8 @@ def aws_basic_info():
     user = json_data["users"][0]["user"]
     port = json_data["users"][0]["port"]
     DB = json_data["users"][0]["DB"]
-    aws_password=["aws"]["awspassword"]
-    aws_host=["aws"]["awshost"]
+    aws_password=json_data["aws"]["awspassword"]
+    aws_host=json_data["aws"]["awshost"]
     return user, aws_password, aws_host, port, DB
 
 
