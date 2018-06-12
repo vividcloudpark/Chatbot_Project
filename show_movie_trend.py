@@ -7,9 +7,9 @@ import matplotlib.font_manager as fm
 import pandas as pd
 from models import *
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, and_
-import numpy as np
-%matplotlib inline
+from sqlalchemy.sql import select
+from sqlalchemy import create_engine, and_, or_, exists
+import numpy as npa
 
 
 
@@ -78,12 +78,15 @@ def insert_into_db(movie_table):
     for movie_name, section_audi in zip(movie_table.index, movie_table.values):
         for search_date,today_audi in zip(movie_table.keys(), section_audi):
             search_date = datetime.datetime.strptime(search_date,'%Y%M%d').date()
-            if today_audi != -1 :
+            if  today_audi == -1 or session.query(exists().where(and_(KobisMovieInfo.movie_name == movie_name,KobisMovieInfo.search_date == search_date))).scalar():
+                print("Data already exists")
+            else:
                 add_movie_info = KobisMovieInfo(movie_name, search_date, today_audi)
                 session.merge(add_movie_info)
-    session.commit()
-    print("Inserted Succesfully!")
-    return "Inserted Succesfully"
+                session.commit()
+                print("Inserted Succesfully!")
+
+    return "Done work"
 
 
 #디비에있는것 그래프로 그려줌
@@ -104,7 +107,7 @@ def query_and_draw(start_date, end_date):
     movie_name = list(movie_table.index)
     date_time = movie_table.columns
     auc_rate = movie_table.values
-
+    #%matplotlib inline
     plt.figure(figsize = (15,12))
     for i in auc_rate:
         plt.plot(date_time,i, marker = "o")
@@ -116,7 +119,7 @@ def query_and_draw(start_date, end_date):
     font_name = fm.FontProperties(fname = "./asset/font/NanumGothic.ttf").get_name()
     plt.rc('font', family = font_name)
     plt.legend(movie_name, loc = "best")
-    savefig(f"./asset/image/{start_date}to{end_date}.png")
+    plt.savefig(f"./asset/image/{start_date}to{end_date}.png")
     print("image saved")
 
     return plt.show()
