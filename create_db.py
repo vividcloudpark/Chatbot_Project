@@ -4,25 +4,18 @@ from sqlalchemy.orm import sessionmaker
 import json
 import pymysql
 from models import *
+import connections as cnnt
 
 
 
-data=open("config.json").read()
-json_data = json.loads(data)
 
-user = json_data["users"][0]["user"]
-password = json_data["users"][0]["password"]
-host = json_data["users"][0]["host"]
-port = json_data["users"][0]["port"]
-DB = json_data["users"][0]["DB"]
-
-target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
-
-engine = create_engine(target, encoding = "utf-8")
-Session = sessionmaker(bind=engine)
-session = Session()
+user, password, host, port, DB = cnnt.local_baic_info()
+# user, password, host, port, DB = aws_basic_info()
+engine = cnnt.mk_engine()
+session = cnnt.mk_session()
 conn = pymysql.connect(host=host, user=user, password=password,  charset='utf8')
 curs = conn.cursor()
+
 
 
 try:

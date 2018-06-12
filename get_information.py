@@ -179,8 +179,8 @@ def get_movie_info(moviecode, soup):
         flim_class = soup.find("dl", "info_spec").find_all("dd")[3].find('a').get_text()
     except:
         flim_class = None
-
-    curs, engine, session = cnnt.cursor()
+    session = cnnt.mk_session()
+    curs = cnnt.mk_cursor()
 
     # pk들 넣기
     if status != "nonpass":

@@ -1,10 +1,11 @@
-from sqlalchemy import Column, String, Float, Integer, Boolean, Date, Table, ForeignKey, Sequence, Text, UniqueConstraint,ForeignKeyConstraint
+from sqlalchemy import Column, String, Float, Integer, Boolean, Date, Table, ForeignKey, Sequence, DateTime, Text, UniqueConstraint,ForeignKeyConstraint
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import json
 import pymysql
+import datetime
 
 Base = declarative_base()
 
@@ -135,3 +136,14 @@ class KobisMovieInfo(Base):
         self.movie_name =movie_name
         self.search_date =search_date
         self.today_audi =today_audi
+
+class KakaoMessage(Base):
+    __tablename__ = 'KakaoMessage'
+    index = Column(Integer, primary_key = True, autoincrement=True)
+    user_key = Column(String(20), nullable=False)
+    timestamp = Column(DateTime, default=datetime.datetime.now())
+    message = Column(Text)
+
+    def __init__(self,user_key, message):
+        self.user_key = user_key
+        self.message = message
