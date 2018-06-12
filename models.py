@@ -128,7 +128,7 @@ class Actors(Base):
 class KobisMovieInfo(Base):
     __tablename__ = 'KobisMovieInfo'
     index = Column(Integer, primary_key = True, autoincrement=True)
-    movie_name = Column(String(50), primary_key = True)
+    movie_name = Column(String(50))
     search_date = Column(Date)
     today_audi = Column(Integer)
 

@@ -8,8 +8,7 @@ import pandas as pd
 from models import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, and_
-import numpy as np
-%matplotlib inline
+import numpy as npa
 
 
 
@@ -104,7 +103,7 @@ def query_and_draw(start_date, end_date):
     movie_name = list(movie_table.index)
     date_time = movie_table.columns
     auc_rate = movie_table.values
-
+    #%matplotlib inline
     plt.figure(figsize = (15,12))
     for i in auc_rate:
         plt.plot(date_time,i, marker = "o")
@@ -116,7 +115,7 @@ def query_and_draw(start_date, end_date):
     font_name = fm.FontProperties(fname = "./asset/font/NanumGothic.ttf").get_name()
     plt.rc('font', family = font_name)
     plt.legend(movie_name, loc = "best")
-    savefig(f"./asset/image/{start_date}to{end_date}.png")
+    plt.savefig(f"./asset/image/{start_date}to{end_date}.png")
     print("image saved")
 
     return plt.show()
