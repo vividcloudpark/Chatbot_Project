@@ -1,12 +1,19 @@
 import os
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 import pymysql
 import connections as cnnt
 from models import *
 import datetime
 
-app = Flask(__name__)
+user, password, host, port, DB = cnnt.aws_basic_info()
 
+target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
+
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = target
+db = SQLAlchemy(app)
 default_button_list = ["관객수 그래프 보기", "현재상영작 보기", "개봉예정작 보기", "장르별 현재상영작", "평점순 현재상영작"]
 
 
@@ -23,14 +30,11 @@ def Keyboard():
 @app.route('/message', methods=['POST'])
 def Message():
     dataReceive = request.get_json()
-    session = cnnt.cursor()[2]
     user_key = dataReceive['user_key']
     content = dataReceive['content']
-    save_message = KakaoMessage(user_key,message)
-    session.add(save_message)
-    session.commit()
-    session.close()
-
+    save_message = KakaoMessage(user_key,content)
+    db.session.add(save_message)
+    db.session.commit()
 
     if content == u"관객수 그래프 보기":
         dataSend = {

@@ -6,6 +6,18 @@ from sqlalchemy.orm import sessionmaker
 import json
 import pymysql
 import datetime
+import connections as cnnt
+
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+
+user, password, host, port, DB = cnnt.aws_basic_info()
+
+target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = target
+db = SQLAlchemy(app)
 
 Base = declarative_base()
 
@@ -144,6 +156,6 @@ class KakaoMessage(Base):
     timestamp = Column(DateTime, default=datetime.datetime.now())
     message = Column(Text)
 
-    def __init__(self,user_key, message):
+    def __init__(self, user_key, message):
         self.user_key = user_key
         self.message = message
