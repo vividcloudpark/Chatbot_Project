@@ -7,7 +7,8 @@ import matplotlib.font_manager as fm
 import pandas as pd
 from models import *
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, and_
+from sqlalchemy.sql import select
+from sqlalchemy import create_engine, and_, or_, exists
 import numpy as npa
 
 
@@ -77,12 +78,15 @@ def insert_into_db(movie_table):
     for movie_name, section_audi in zip(movie_table.index, movie_table.values):
         for search_date,today_audi in zip(movie_table.keys(), section_audi):
             search_date = datetime.datetime.strptime(search_date,'%Y%M%d').date()
-            if today_audi != -1 :
+            if  today_audi == -1 or session.query(exists().where(and_(KobisMovieInfo.movie_name == movie_name,KobisMovieInfo.search_date == search_date))).scalar():
+                print("Data already exists")
+            else:
                 add_movie_info = KobisMovieInfo(movie_name, search_date, today_audi)
                 session.merge(add_movie_info)
-    session.commit()
-    print("Inserted Succesfully!")
-    return "Inserted Succesfully"
+                session.commit()
+                print("Inserted Succesfully!")
+
+    return "Done work"
 
 
 #디비에있는것 그래프로 그려줌
