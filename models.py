@@ -24,7 +24,7 @@ class BaseMovieInfo(Base):
 class DetailedBaseMovieInfo(Base):
     __tablename__ = 'DetailedBaseMovieInfo'
     movie_code = Column(String(10), ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"),primary_key = True)
-    opendate = Column(Date)
+    opendate = Column(Date, nullable=True)
     movie_name_eng = Column(String(100), nullable=True)
     produce_year = Column(String(5), nullable=True)
     flim_class = Column(String(100), nullable=True)
@@ -130,7 +130,7 @@ class KobisMovieInfo(Base):
     movie_name = Column(String(50), primary_key = True)
     search_date = Column(Date)
     today_audi = Column(Integer)
-    
+
     def __init__(self,movie_name,search_date,today_audi):
         self.movie_name =movie_name
         self.search_date =search_date

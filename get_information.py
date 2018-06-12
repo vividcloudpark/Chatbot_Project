@@ -22,7 +22,7 @@ def score(soup,i):
     if len(a) != 0:
         return a
     else:
-        return 0.00
+        return None
 
 def get_code(link):
     a = link.split("=")
@@ -52,9 +52,12 @@ def replace_detail(content):
     return result
 
 
-def make_craw_list():
-    movie_by_op_day = "https://movie.naver.com/movie/running/current.nhn?view=list&tab=normal&order=open"
-    soup = BeautifulSoup(get_source(movie_by_op_day), "lxml")
+def make_craw_list(selector):
+    if selector == "op":
+        link = "https://movie.naver.com/movie/running/current.nhn?view=list&tab=normal&order=open"
+    elif selector == "pre":
+        link = "https://movie.naver.com/movie/running/premovie.nhn"
+    soup = BeautifulSoup(get_source(link), "lxml")
     res = soup.find_all('dl', 'lst_dsc')
     to_craw_list = []
     for i in range(len(res)):
@@ -95,17 +98,21 @@ def get_movie_info(moviecode, soup):
 
 
     #평점
-    giza = len(soup.find(class_="main_score").find_all('div', 'star_score'))
-    if giza == 4: #기레기없을때
-        viewer_score = score(soup, 0)
-        ntz_score = score(soup, 1)
+    try:
+        giza = len(soup.find(class_="main_score").find_all('div', 'star_score'))
+        if giza == 4: #기레기없을때
+            viewer_score = score(soup, 0)
+            ntz_score = score(soup, 1)
+            giza_score = None
+
+        elif giza == 5:
+            viewer_score = score(soup, 0)
+            giza_score = score(soup, 1)
+            ntz_score = score(soup, 2)
+    except:
+        viewer_score = None
         giza_score = None
-
-    elif giza == 5:
-        viewer_score = score(soup, 0)
-        giza_score = score(soup, 1)
-        ntz_score = score(soup, 2)
-
+        ntz_score = None
 
     #영화 줄거리
     try:
@@ -123,27 +130,49 @@ def get_movie_info(moviecode, soup):
 
 
     #장르리스트
-    genre_list = make_list(soup, 0)
-    nation_list = make_list(soup, 1)
+    try:
+        genre_list = make_list(soup, 0)
+    except:
+        genre_list = ["장르정보없음"]
+
+    try:
+        nation_list = make_list(soup, 1)
+    except:
+        nation_list = ["국가정보없음"]
 
     #개봉일
-    open_date = "".join(make_list(soup, 3)).strip()
-    print(moviecode)
-    print(open_date)
-    open_date = datetime.datetime.strptime(open_date, '%Y.%m.%d').date()
+    try:
+        open_date = "".join(make_list(soup, 3)).strip()
+        print(len(open_date))
+        status = 1
+        if len(open_date)>10:
+            open_date = open_date.split(" ")[1]
+            open_date = datetime.datetime.strptime(open_date, '%Y.%m.%d').date()
+        elif len(open_date)<10:
+            status = "nonpass"
+    except:
+        status = "nonpass"
 
     #감독
-    director = soup.find("dl", "info_spec").find_all("dd")[1].get_text()
-    directorcode = get_code(soup.find("dl", "info_spec").find_all("dd")[1].a.get('href'))
-
+    try:
+        director = soup.find("dl", "info_spec").find_all("dd")[1].get_text()
+        directorcode = get_code(soup.find("dl", "info_spec").find_all("dd")[1].a.get('href'))
+    except:
+        directorcode = -9999
+        director = "감독정보가 없습니다"
 
     #배우 그리고 배우코드
-    base = soup.find("dl", "info_spec").find_all("dd")[2].find_all('a')
     actordict={}
-    for i in range(len(base)-1):
-        actor = soup.find("dl", "info_spec").find_all("dd")[2].find_all('a')[i].get_text()
-        actor_code = get_code(soup.find("dl", "info_spec").find_all("dd")[2].find_all('a')[i].get('href'))
-        actordict.update({actor_code : actor})
+    try:
+        base = soup.find("dl", "info_spec").find_all("dd")[2].find_all('a')
+
+        for i in range(len(base)-1):
+            actor = soup.find("dl", "info_spec").find_all("dd")[2].find_all('a')[i].get_text()
+            actor_code = get_code(soup.find("dl", "info_spec").find_all("dd")[2].find_all('a')[i].get('href'))
+            actordict.update({actor_code : actor})
+    except:
+        actordict.update({-9999 : "None"})
+
 
     #관람등급
     try:
@@ -154,41 +183,43 @@ def get_movie_info(moviecode, soup):
     curs, engine, session = cnnt.cursor()
 
     # pk들 넣기
-    codeofmovie = BaseMovieInfo(moviecode, kor_nm)
-    session.merge(codeofmovie)
-    codeofdirector = Director(directorcode, director)
-    session.merge(codeofdirector)
-    for actorcode in actordict:
-        c = Actors(actorcode, actordict[actorcode])
-        session.merge(c)
-    for genre in genre_list:
-        genrecode = Genre(genre)
-        session.merge(genrecode)
-    for nation in nation_list:
-        nations = Nations(nation)
-        session.merge(nations)
-    session.commit()
+    if status != "nonpass":
+        codeofmovie = BaseMovieInfo(moviecode, kor_nm)
+        session.merge(codeofmovie)
+        codeofdirector = Director(directorcode, director)
+        session.merge(codeofdirector)
+        for actorcode in actordict:
+            c = Actors(actorcode, actordict[actorcode])
+            session.merge(c)
+        for genre in genre_list:
+            genrecode = Genre(genre)
+            session.merge(genrecode)
+        for nation in nation_list:
+            nations = Nations(nation)
+            session.merge(nations)
+        session.commit()
 
-    for actorcode in actordict:
-        movieandactor = ActorsOfMovie(moviecode, actorcode)
-        session.merge(movieandactor)
-    for genre in genre_list:
-        movieandgenre = GenreOfMovie(moviecode, genre)
-        session.merge(movieandgenre)
-    for nation in nation_list:
-        movieandnation = NationOfMovie(moviecode, nation)
-    session.commit()
+        for actorcode in actordict:
+            movieandactor = ActorsOfMovie(moviecode, actorcode)
+            session.merge(movieandactor)
+        for genre in genre_list:
+            movieandgenre = GenreOfMovie(moviecode, genre)
+            session.merge(movieandgenre)
+        for nation in nation_list:
+            movieandnation = NationOfMovie(moviecode, nation)
+            session.merge(movieandnation)
+        session.commit()
 
-    moviescore = MovieScore(moviecode, viewer_score, giza_score, ntz_score)
-    directorandmovie = DirectorOfMovie(moviecode, directorcode)
-    detail = DetailedBaseMovieInfo(moviecode, open_date, eng_nm, produce_year, flim_class, story, story_detail)
+        moviescore = MovieScore(moviecode, viewer_score, giza_score, ntz_score)
+        directorandmovie = DirectorOfMovie(moviecode, directorcode)
+        detail = DetailedBaseMovieInfo(moviecode, open_date, eng_nm, produce_year, flim_class, story, story_detail)
 
-    session.merge(moviescore)
-    session.merge(directorandmovie)
-    session.merge(detail)
-    session.commit()
-    session.close()
-    print("데이터베이스에 저장 완료!")
+        session.merge(moviescore)
+        session.merge(directorandmovie)
+        session.merge(detail)
+        session.commit()
+        session.close()
+        print(moviecode, open_date, "데이터베이스에 저장 완료!")
 # 추가될정보
 # 1.장르정보
 # 2.국가정보
