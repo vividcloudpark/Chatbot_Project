@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import lxml
 import json
 import connections as cnnt
-from models import *
+from flask_models import *
 import datetime
 
 
@@ -179,46 +179,46 @@ def get_movie_info(moviecode, soup):
         flim_class = soup.find("dl", "info_spec").find_all("dd")[3].find('a').get_text()
     except:
         flim_class = None
-    session = cnnt.mk_session()
-    curs = cnnt.mk_cursor()
+    # session = cnnt.mk_session()
+    # curs = cnnt.mk_cursor()
 
     # pk들 넣기
     if status != "nonpass":
         codeofmovie = BaseMovieInfo(moviecode, kor_nm)
-        session.merge(codeofmovie)
+        db.session.merge(codeofmovie)
         codeofdirector = Director(directorcode, director)
-        session.merge(codeofdirector)
+        db.session.merge(codeofdirector)
         for actorcode in actordict:
             c = Actors(actorcode, actordict[actorcode])
-            session.merge(c)
+            db.session.merge(c)
         for genre in genre_list:
             genrecode = Genre(genre)
-            session.merge(genrecode)
+            db.session.merge(genrecode)
         for nation in nation_list:
             nations = Nations(nation)
-            session.merge(nations)
-        session.commit()
+            db.session.merge(nations)
+        db.session.commit()
 
         for actorcode in actordict:
             movieandactor = ActorsOfMovie(moviecode, actorcode)
-            session.merge(movieandactor)
+            db.session.merge(movieandactor)
         for genre in genre_list:
             movieandgenre = GenreOfMovie(moviecode, genre)
-            session.merge(movieandgenre)
+            db.session.merge(movieandgenre)
         for nation in nation_list:
             movieandnation = NationOfMovie(moviecode, nation)
-            session.merge(movieandnation)
-        session.commit()
+            db.session.merge(movieandnation)
+        db.session.commit()
 
         moviescore = MovieScore(moviecode, viewer_score, giza_score, ntz_score)
         directorandmovie = DirectorOfMovie(moviecode, directorcode)
         detail = DetailedBaseMovieInfo(moviecode, open_date, eng_nm, produce_year, flim_class, story, story_detail)
 
-        session.merge(moviescore)
-        session.merge(directorandmovie)
-        session.merge(detail)
-        session.commit()
-        session.close()
+        db.session.merge(moviescore)
+        db.session.merge(directorandmovie)
+        db.session.merge(detail)
+        db.session.commit()
+        db.session.close()
         print(moviecode, open_date, "데이터베이스에 저장 완료!")
 # 추가될정보
 # 1.장르정보
