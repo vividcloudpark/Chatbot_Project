@@ -127,7 +127,9 @@ def get_movie_info(moviecode, soup):
     nation_list = make_list(soup, 1)
 
     #개봉일
-    open_date = "".join(make_list(soup, 3)).lstrip()
+    open_date = "".join(make_list(soup, 3)).strip()
+    print(moviecode)
+    print(open_date)
     open_date = datetime.datetime.strptime(open_date, '%Y.%m.%d').date()
 
     #감독
