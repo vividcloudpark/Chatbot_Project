@@ -30,7 +30,7 @@ def make_last_msg(user_key):
         return None
 
 
-user, password, host, port, DB = cnnt.local_baic_info()
+user, password, host, port, DB = cnnt.aws_basic_info()
 
 target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
 movie_list = make_movie_list()

@@ -6,7 +6,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 
-user, password, host, port, DB = cnnt.local_baic_info()
+user, password, host, port, DB = cnnt.aws_basic_info()
 
 target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
 app = Flask(__name__)
