@@ -9,7 +9,7 @@ import connections as cnnt
 
 
 
-user, password, host, port, DB = cnnt.aws_basic_info()
+user, password, host, port, DB = cnnt.local_baic_info()
 # user, password, host, port, DB = aws_basic_info()
 engine = cnnt.mk_engine()
 session = cnnt.mk_session()

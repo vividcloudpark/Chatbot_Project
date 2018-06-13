@@ -30,7 +30,7 @@ def make_last_msg(user_key):
         return None
 
 
-user, password, host, port, DB = cnnt.aws_basic_info()
+user, password, host, port, DB = cnnt.local_baic_info()
 
 target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
 movie_list = make_movie_list()
@@ -84,12 +84,11 @@ def find_by_score():
 
 def insert_trend(section):
     today = datetime.datetime.now().date()
-#     insert_movie_audiance_num_per_date(today,section)
+    insert_movie_audiance_num_per_date(today,section)
     section = datetime.timedelta(section)
     end_date = today - section
-#     query_and_draw(today, end_date)
     
-    return today, end_date
+    return query_and_draw(today, end_date)
 
 def save_message(user_key, content):
     save_message = KakaoMessage(user_key,content)

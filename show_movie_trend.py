@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, and_, or_, exists
 from sqlalchemy.ext.declarative import declarative_base
 import numpy as npa
 import connections as cnnt
-
+import monthdelta
 
 # -*- coding: utf-8 -*--
 #검색기준시간 ~ 일주일전으로 검색
@@ -23,7 +23,7 @@ with open("config.json", "r", encoding="utf8") as f:
     json_data = json.loads(contents)
 
 kobis_key = json_data["users"][0]["kobis_key"]
-user, password, host, port, DB = cnnt.aws_basic_info()
+user, password, host, port, DB = cnnt.local_baic_info()
 
 
 
@@ -61,13 +61,8 @@ def insert_movie_audiance_num_per_date(input_date, time_section):
         for movie_info in movie_infos:
             audiacc_per_movie[movie_info['movieNm']] = movie_info['audiCnt']
         movie_info_per_date[date_time] = audiacc_per_movie
-
-
     movie_table = pd.DataFrame(movie_info_per_date)
-    movie_table["sum"] = movie_table.sum(axis = 1)
-    movie_table = movie_table.sort_values(by = "sum", ascending= False)[:5]
-    del movie_table["sum"]
-
+    
     insert_into_db(movie_table)
     return movie_table
 
@@ -80,7 +75,8 @@ def insert_into_db(movie_table):
             if  today_audi == -1 or session.query(exists().where(and_(KobisMovieInfo.movie_name == movie_name,KobisMovieInfo.search_date == search_date))).scalar():
                 print("Data already exists")
             else:
-                add_movie_info = KobisMovieInfo(movie_name, search_date, today_audi)
+                add_month =  monthdelta.monthdelta(5)
+                add_movie_info = KobisMovieInfo(movie_name, search_date+add_month, today_audi)
                 session.merge(add_movie_info)
                 session.commit()
                 print("Inserted Succesfully!")
