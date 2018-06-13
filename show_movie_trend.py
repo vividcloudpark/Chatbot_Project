@@ -5,7 +5,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import pandas as pd
-from models import *
+from flask_models import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine, and_, or_, exists

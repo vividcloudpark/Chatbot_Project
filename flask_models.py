@@ -66,16 +66,13 @@ class MovieScore(db.Model):
 class GenreOfMovie(db.Model):
     __tablename__ = 'GenreOfMovie'
     index = db.Column(db.Integer, primary_key = True)
-    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
-    movie_genre = db.Column(db.String(20), db.ForeignKey('Genre.genre', onupdate="CASCADE", ondelete="CASCADE"))
+    # movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
+    # movie_genre = db.Column(db.String(20), db.ForeignKey('Genre.genre', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code'))
+    movie_genre = db.Column(db.String(20), db.ForeignKey('Genre.genre'))
 
-#     association_table = 
-#     db.Table('association', Base.metadata,
-#     db.Column('left_id', Integer, db.ForeignKey('left.id')),
-#     db.Column('right_id', Integer, ForeignKey('right.id'))
-# )
-    moviecode_of_genre_with_movie = db.relationship('BaseMovieInfo', backref=db.backref('GenreOfMovie', lazy=True))
-    genrecode_of_genre_with_moive = db.relationship('Genre', backref=db.backref('GenreOfMovie', lazy=True))
+    moviecode_of_genre_with_movie = db.relationship('BaseMovieInfo', backref=db.backref('GenreOfMovie', cascade="all, delete-orphan"))
+    genrecode_of_genre_with_moive = db.relationship('Genre', backref=db.backref('GenreOfMovie', cascade="all, delete-orphan"))
 
     def __init__(self, movie_code, movie_genre):
         self.movie_code = movie_code
@@ -90,11 +87,12 @@ class Genre(db.Model):
 class NationOfMovie(db.Model):
     __tablename__ = 'NationOfMovie'
     index = db.Column(db.Integer, primary_key = True)
-    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
-    movie_nation = db.Column(db.String(20), db.ForeignKey('Nations.nations', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code'))
+    movie_nation = db.Column(db.String(20), db.ForeignKey('Nations.nations'))
 
-    moviecode_of_nation = db.relationship('BaseMovieInfo', backref=db.backref('NationOfMovie', lazy=True))
-    nationcode_of_nation = db.relationship('Nations', backref=db.backref('NationOfMovie', lazy=True))
+    moviecode_of_nation = db.relationship('BaseMovieInfo', backref=db.backref('NationOfMovie', cascade="all, delete-orphan"))
+    nationcode_of_nation = db.relationship('Nations', backref=db.backref('NationOfMovie', cascade="all, delete-orphan"))
+
 
     def __init__(self, movie_code, movie_genre):
         self.movie_code = movie_code
@@ -110,12 +108,11 @@ class Nations(db.Model):
 class DirectorOfMovie(db.Model):
     __tablename__ = 'DirectorOfMovie'
     index = db.Column(db.Integer, primary_key = True)
-    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
-    movie_director_code = db.Column(db.String(10), db.ForeignKey('Director.director_code', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code'))
+    movie_director_code = db.Column(db.String(10), db.ForeignKey('Director.director_code'))
+    moviecode_of_director = db.relationship('BaseMovieInfo', backref=db.backref('DirectorOfMovie', cascade="all, delete-orphan"))
+    directorcode_of_director = db.relationship('Director', backref=db.backref('DirectorOfMovie', cascade="all, delete-orphan"))
 
-
-    moviecode_of_director = db.relationship('BaseMovieInfo', backref=db.backref('DirectorOfMovie', lazy=True))
-    directorcode_of_nation = db.relationship('Director', backref=db.backref('DirectorOfMovie', lazy=True))
 
     def __init__(self, movie_code, movie_director_code):
         self.movie_code = movie_code
@@ -131,14 +128,15 @@ class Director(db.Model):
         self.director_code = director_code
         self.director_name_kor = director_name_kor
 
-class ActorsOfMovie():
+class ActorsOfMovie(db.Model):
     __tablename__ = 'ActorsOfMovie'
     index = db.Column(db.Integer, primary_key = True)
-    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code', onupdate="CASCADE", ondelete="CASCADE"))
-    movie_actor_code = db.Column(db.String(50), db.ForeignKey('Actors.actor_code', onupdate="CASCADE", ondelete="CASCADE"))
+    movie_code = db.Column(db.String(10), db.ForeignKey('BaseMovieInfo.movie_code'))
+    movie_actor_code = db.Column(db.String(50), db.ForeignKey('Actors.actor_code'))
 
-    moviecode_of_actor = db.relationship('BaseMovieInfo', backref=db.backref('ActorsOfMovie', lazy=True))
-    actorcode_of_actor = db.relationship('Actors', backref=db.backref('ActorsOfMovie', lazy=True))
+    moviecode_of_actor = db.relationship('BaseMovieInfo', backref=db.backref('ActorsOfMovie', cascade="all, delete-orphan"))
+    actorcode_of_actor = db.relationship('Actors', backref=db.backref('ActorsOfMovie', cascade="all, delete-orphan"))
+
 
     def __init__(self, movie_code, movie_actor_code):
         self.movie_code = movie_code

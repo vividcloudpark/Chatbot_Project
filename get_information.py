@@ -198,6 +198,8 @@ def get_movie_info(moviecode, soup):
             nations = Nations(nation)
             db.session.merge(nations)
         db.session.commit()
+        db.session.close()
+
 
         for actorcode in actordict:
             movieandactor = ActorsOfMovie(moviecode, actorcode)
@@ -209,7 +211,7 @@ def get_movie_info(moviecode, soup):
             movieandnation = NationOfMovie(moviecode, nation)
             db.session.merge(movieandnation)
         db.session.commit()
-
+        db.session.close()
         moviescore = MovieScore(moviecode, viewer_score, giza_score, ntz_score)
         directorandmovie = DirectorOfMovie(moviecode, directorcode)
         detail = DetailedBaseMovieInfo(moviecode, open_date, eng_nm, produce_year, flim_class, story, story_detail)

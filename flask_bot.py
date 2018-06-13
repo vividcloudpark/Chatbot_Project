@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
 import connections as cnnt
-from models import *
+from flask_models import *
 import datetime
 
 user, password, host, port, DB = cnnt.aws_basic_info()
@@ -32,6 +32,7 @@ def Message():
     dataReceive = request.get_json()
     user_key = dataReceive['user_key']
     content = dataReceive['content']
+    db.KakaoMessage
     save_message = KakaoMessage(user_key,content)
     db.session.add(save_message)
     db.session.commit()
