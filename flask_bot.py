@@ -32,7 +32,6 @@ def Message():
     dataReceive = request.get_json()
     user_key = dataReceive['user_key']
     content = dataReceive['content']
-    db.KakaoMessage
     save_message = KakaoMessage(user_key,content)
     db.session.add(save_message)
     db.session.commit()
@@ -40,7 +39,7 @@ def Message():
     if content == u"관객수 그래프 보기":
         dataSend = {
             "message": {
-                "text": f"{user}님, 행복하세요."
+                "text": f"{user_key}님, 행복하세요."
             },
             "keyboard":{
                 "type": "buttons",
