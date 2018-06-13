@@ -9,9 +9,10 @@ from flask_models import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine, and_, or_, exists
+from sqlalchemy.ext.declarative import declarative_base
 import numpy as npa
-
-
+import connections as cnnt
+import monthdelta
 
 # -*- coding: utf-8 -*--
 #검색기준시간 ~ 일주일전으로 검색
@@ -21,12 +22,10 @@ with open("config.json", "r", encoding="utf8") as f:
     contents = f.read()
     json_data = json.loads(contents)
 
-user = json_data["users"][0]["user"]
-password = json_data["users"][0]["password"]
-host = json_data["users"][0]["host"]
-port = json_data["users"][0]["port"]
 kobis_key = json_data["users"][0]["kobis_key"]
-DB = json_data["users"][0]["DB"]
+user, password, host, port, DB = cnnt.aws_basic_info()
+
+
 
 engine = create_engine('mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8'%(user,password,host,port,DB))
 Session = sessionmaker(bind=engine)
@@ -40,7 +39,7 @@ conn= engine.connect()
 def insert_movie_audiance_num_per_date(input_date, time_section):
     #params : week or month
 
-    input_date = datetime.datetime.strptime(input_date,'%Y-%m-%d')
+    # input_date = datetime.datetime.strptime(input_date,'%Y-%m-%d')
     searching_date = []
 
     if not input_date:
@@ -62,13 +61,8 @@ def insert_movie_audiance_num_per_date(input_date, time_section):
         for movie_info in movie_infos:
             audiacc_per_movie[movie_info['movieNm']] = movie_info['audiCnt']
         movie_info_per_date[date_time] = audiacc_per_movie
-
-
     movie_table = pd.DataFrame(movie_info_per_date)
-    movie_table["sum"] = movie_table.sum(axis = 1)
-    movie_table = movie_table.sort_values(by = "sum", ascending= False)[:5]
-    del movie_table["sum"]
-
+    
     insert_into_db(movie_table)
     return movie_table
 
@@ -81,7 +75,8 @@ def insert_into_db(movie_table):
             if  today_audi == -1 or session.query(exists().where(and_(KobisMovieInfo.movie_name == movie_name,KobisMovieInfo.search_date == search_date))).scalar():
                 print("Data already exists")
             else:
-                add_movie_info = KobisMovieInfo(movie_name, search_date, today_audi)
+                add_month =  monthdelta.monthdelta(5)
+                add_movie_info = KobisMovieInfo(movie_name, search_date+add_month, today_audi)
                 session.merge(add_movie_info)
                 session.commit()
                 print("Inserted Succesfully!")
@@ -91,8 +86,8 @@ def insert_into_db(movie_table):
 
 #디비에있는것 그래프로 그려줌
 def query_and_draw(start_date, end_date):
-    start_date = datetime.datetime.strptime(start_date,'%Y-%M-%d').date()
-    end_date = datetime.datetime.strptime(end_date,'%Y-%M-%d').date()
+    start_date = start_date.strftime("%Y-%m-%d")
+    end_date = end_date.strftime("%Y-%m-%d")
     query = pd.DataFrame(session.query(KobisMovieInfo.movie_name, KobisMovieInfo.search_date,KobisMovieInfo.today_audi).filter(start_date >= KobisMovieInfo.search_date).filter(KobisMovieInfo.search_date >= end_date).all())
     movie_table =  pd.DataFrame(index = list(set(query.movie_name)), columns = sorted(list(set(query.search_date))))
 
@@ -123,5 +118,5 @@ def query_and_draw(start_date, end_date):
     print("image saved")
 
     return plt.show()
-
+#
 session.close()
