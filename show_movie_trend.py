@@ -40,7 +40,7 @@ conn= engine.connect()
 def insert_movie_audiance_num_per_date(input_date, time_section):
     #params : week or month
 
-    input_date = datetime.datetime.strptime(input_date,'%Y-%m-%d')
+    # input_date = datetime.datetime.strptime(input_date,'%Y-%m-%d')
     searching_date = []
 
     if not input_date:

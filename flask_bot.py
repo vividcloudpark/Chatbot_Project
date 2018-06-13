@@ -5,7 +5,8 @@ import pymysql
 import connections as cnnt
 from flask_models import *
 import datetime
-
+from datetime import datetime
+from show_movie_trend import *
 def make_movie_list():
     curs = cnnt.mk_cursor()
     sql = """SELECT movie_name_kor FROM dbtoday.BaseMovieInfo"""
@@ -41,7 +42,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = target
 db = SQLAlchemy(app)
 default_button_list = ["관객수 그래프 보기", "현재상영작 보기", "개봉예정작 보기", "장르별 현재상영작", "평점순 현재상영작"]
-
+graph_buttons = ["일주일", "이주일", "한달"]
 
 @app.route('/keyboard')
 def Keyboard():
@@ -82,6 +83,12 @@ def find_by_score():
     final_string = "".join(stringlist)
     return namelist, final_string
 
+# def get_trend():
+    # curs = cnnt.mk_cursor()
+    # today = datetime.now().date()
+    # if
+
+
 def save_message(user_key, content):
     save_message = KakaoMessage(user_key,content)
     db.session.add(save_message)
@@ -117,15 +124,17 @@ def Message():
     elif content == u"관객수 그래프 보기":
         dataSend = {
             "message": {
-                "text": f"{user_key}님, 행복하세요."
+                "text": "며칠간격으로 그래프를 보여드릴까요?"
             },
             "keyboard":{
                 "type": "buttons",
-                    "buttons":default_button_list
+                    "buttons":graph_buttons
             }
 
         }
-
+    elif content = u"일주일" :
+        insert_movie_audiance_num_per_date(datetime.now().day(), 7)
+        dataSend = {'message' : {'text' : "확인^^"}}
     elif content == u"현재상영작 보기":
         dataSend = {
             "message": {
