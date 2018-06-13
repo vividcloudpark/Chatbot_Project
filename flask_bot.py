@@ -5,7 +5,6 @@ import pymysql
 import connections as cnnt
 from flask_models import *
 import datetime
-import datetime
 from show_movie_trend import *
 def make_movie_list():
     curs = cnnt.mk_cursor()
@@ -85,12 +84,12 @@ def find_by_score():
 
 def insert_trend(section):
     today = datetime.datetime.now().date()
-    insert_movie_audiance_num_per_date(today,section)
+#     insert_movie_audiance_num_per_date(today,section)
     section = datetime.timedelta(section)
     end_date = today - section
-    query_and_draw(today, end_date)
+#     query_and_draw(today, end_date)
     
-    return 
+    return today, end_date
 
 def save_message(user_key, content):
     save_message = KakaoMessage(user_key,content)
