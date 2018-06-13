@@ -93,34 +93,35 @@ def query_and_draw(start_date, end_date):
 #    start_date = datetime.datetime.strptime(start_date,'%Y-%M-%d').date()
 #    end_date = datetime.datetime.strptime(end_date,'%Y-%M-%d').date()
     query = pd.DataFrame(session.query(KobisMovieInfo.movie_name, KobisMovieInfo.search_date,KobisMovieInfo.today_audi).filter(start_date >= KobisMovieInfo.search_date).filter(KobisMovieInfo.search_date >= end_date).all())
-    movie_table =  pd.DataFrame(index = list(set(query.movie_name)), columns = sorted(list(set(query.search_date))))
-
-    for i in query.values:
-        movie_table.loc[movie_table.index == i[0] , movie_table.columns == i[1]] = i[2]
-    movie_table["sum"] = movie_table.sum(axis = 1)
-    movie_table = movie_table.sort_values(by = "sum", ascending= False)[:5]
-    del movie_table["sum"]
-    del query
-
-    movie_table.columns = movie_table.columns.map(lambda x : x.strftime('%Y%m%d'))
-    movie_name = list(movie_table.index)
-    date_time = movie_table.columns
-    auc_rate = movie_table.values
-    #%matplotlib inline
-    plt.figure(figsize = (15,12))
-    for i in auc_rate:
-        plt.plot(date_time,i, marker = "o")
-    plt.xlabel("Date")
-    plt.ylabel("AudiAcc")
-    plt.autoscale(enable = True, axis = "y")
-
-
-    font_name = fm.FontProperties(fname = "./asset/font/NanumGothic.ttf").get_name()
-    plt.rc('font', family = font_name)
-    plt.legend(movie_name, loc = "best")
-    plt.savefig(f"./asset/image/{start_date}to{end_date}.png")
-    print("image saved")
-
-    return plt.show()
-
+#     movie_table =  pd.DataFrame(index = list(set(query.movie_name)), columns = sorted(list(set(query.search_date))))
+#
+#     for i in query.values:
+#         movie_table.loc[movie_table.index == i[0] , movie_table.columns == i[1]] = i[2]
+#     movie_table["sum"] = movie_table.sum(axis = 1)
+#     movie_table = movie_table.sort_values(by = "sum", ascending= False)[:5]
+#     del movie_table["sum"]
+#     del query
+#
+#     movie_table.columns = movie_table.columns.map(lambda x : x.strftime('%Y%m%d'))
+#     movie_name = list(movie_table.index)
+#     date_time = movie_table.columns
+#     auc_rate = movie_table.values
+#     #%matplotlib inline
+#     plt.figure(figsize = (15,12))
+#     for i in auc_rate:
+#         plt.plot(date_time,i, marker = "o")
+#     plt.xlabel("Date")
+#     plt.ylabel("AudiAcc")
+#     plt.autoscale(enable = True, axis = "y")
+#
+#
+#     font_name = fm.FontProperties(fname = "./asset/font/NanumGothic.ttf").get_name()
+#     plt.rc('font', family = font_name)
+#     plt.legend(movie_name, loc = "best")
+#     plt.savefig(f"./asset/image/{start_date}to{end_date}.png")
+#     print("image saved")
+#
+#     return plt.show()
+#
 session.close()
+    return query
