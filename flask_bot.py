@@ -5,11 +5,11 @@ import pymysql
 import connections as cnnt
 from flask_models import *
 import datetime
-from datetime import datetime
+import datetime
 from show_movie_trend import *
 def make_movie_list():
     curs = cnnt.mk_cursor()
-    sql = """SELECT movie_name_kor FROM dbtoday.BaseMovieInfo"""
+    sql = """SELECT movie_name_kor FROM DBtoday.BaseMovieInfo"""
     a = curs.execute(sql)
     sqlresult = curs.fetchall()
     curs.close()
@@ -21,7 +21,7 @@ def make_movie_list():
 def make_last_msg(user_key):
     curs = cnnt.mk_cursor()
     try:
-        sql =f'''SELECT * FROM dbtoday.KakaoMessage as KM Where user_key = '{user_key}' order by KM.timestamp desc, KM.index desc limit 1;'''
+        sql =f'''SELECT * FROM DBtoday.KakaoMessage as KM Where user_key = '{user_key}' order by KM.timestamp desc, KM.index desc limit 1;'''
         a = curs.execute(sql)
         sqlresult = curs.fetchone()
         curs.close()
@@ -62,7 +62,7 @@ def find_by_score():
     CASE WHEN viewer_score = 0 THEN round(ntz_score,2)
     ELSE round((ntz_score+viewer_score)/2,2)
     END AS average_score, giza_score
-        FROM dbtoday.MovieScore as ms
+        FROM DBtoday.MovieScore as ms
         INNER JOIN BaseMovieInfo as ba
         ON ms.movie_code = ba.movie_code
         INNER JOIN DetailedBaseMovieInfo as dm
@@ -83,11 +83,14 @@ def find_by_score():
     final_string = "".join(stringlist)
     return namelist, final_string
 
-# def get_trend():
-    # curs = cnnt.mk_cursor()
-    # today = datetime.now().date()
-    # if
-
+def insert_trend(section):
+    today = datetime.datetime.now().date()
+    insert_movie_audiance_num_per_date(today,section)
+    section = datetime.timedelta(section)
+    end_date = today - section
+    query_and_draw(start_date, end_date)
+    
+    return 
 
 def save_message(user_key, content):
     save_message = KakaoMessage(user_key,content)
@@ -132,8 +135,8 @@ def Message():
             }
 
         }
-    elif content = u"일주일" :
-        insert_movie_audiance_num_per_date(datetime.now().day(), 7)
+    elif content == u"일주일" :
+      #  insert_trend(7)
         dataSend = {'message' : {'text' : "확인^^"}}
     elif content == u"현재상영작 보기":
         dataSend = {
@@ -191,3 +194,4 @@ def Message():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000)
+

@@ -9,8 +9,9 @@ from flask_models import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine, and_, or_, exists
+from sqlalchemy.ext.declarative import declarative_base
 import numpy as npa
-
+import connections as cnnt
 
 
 # -*- coding: utf-8 -*--
@@ -21,12 +22,10 @@ with open("config.json", "r", encoding="utf8") as f:
     contents = f.read()
     json_data = json.loads(contents)
 
-user = json_data["users"][0]["user"]
-password = json_data["users"][0]["password"]
-host = json_data["users"][0]["host"]
-port = json_data["users"][0]["port"]
 kobis_key = json_data["users"][0]["kobis_key"]
-DB = json_data["users"][0]["DB"]
+user, password, host, port, DB = cnnt.aws_basic_info()
+
+
 
 engine = create_engine('mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8'%(user,password,host,port,DB))
 Session = sessionmaker(bind=engine)
@@ -91,8 +90,8 @@ def insert_into_db(movie_table):
 
 #디비에있는것 그래프로 그려줌
 def query_and_draw(start_date, end_date):
-    start_date = datetime.datetime.strptime(start_date,'%Y-%M-%d').date()
-    end_date = datetime.datetime.strptime(end_date,'%Y-%M-%d').date()
+#    start_date = datetime.datetime.strptime(start_date,'%Y-%M-%d').date()
+#    end_date = datetime.datetime.strptime(end_date,'%Y-%M-%d').date()
     query = pd.DataFrame(session.query(KobisMovieInfo.movie_name, KobisMovieInfo.search_date,KobisMovieInfo.today_audi).filter(start_date >= KobisMovieInfo.search_date).filter(KobisMovieInfo.search_date >= end_date).all())
     movie_table =  pd.DataFrame(index = list(set(query.movie_name)), columns = sorted(list(set(query.search_date))))
 
