@@ -19,7 +19,7 @@ def aws_basic_info():
     data=open("config.json").read()
     json_data = json.loads(data)
 
-    user = json_data["users"][0]["user"]
+    user = json_data["aws"]["user"]
     port = json_data["users"][0]["port"]
     DB = json_data["users"][0]["DB"]
     aws_password=json_data["aws"]["awspassword"]

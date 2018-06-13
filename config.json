@@ -1,5 +1,6 @@
 {"users":[
-  {"user":"root", "password":"database", "host":"localhost","port":"3306", "DB":"dbtoday","kobis_key":"430156241533f1d058c603178cc3ca0e"
+  {"user":"root", "password":"shin1346", "host":"localhost","port":"3306", "DB":"DBtoday","kobis_key":"430156241533f1d058c603178cc3ca0e"
   }],
-"aws":{"awshost" : "clouddatabase.c03xxgdr7sqt.ap-northeast-2.rds.amazonaws.com",
-      "awspassword":"database"}}
+"aws":{"user":"hyuna1615",
+  "awshost" : "db-bot.cvvog6yfp5in.ap-northeast-2.rds.amazonaws.com",
+      "awspassword":"shin~134679"}}

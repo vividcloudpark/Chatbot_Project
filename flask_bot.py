@@ -5,10 +5,11 @@ import pymysql
 import connections as cnnt
 from flask_models import *
 import datetime
-
+import datetime
+from show_movie_trend import *
 def make_movie_list():
     curs = cnnt.mk_cursor()
-    sql = """SELECT movie_name_kor FROM dbtoday.BaseMovieInfo"""
+    sql = """SELECT movie_name_kor FROM DBtoday.BaseMovieInfo"""
     a = curs.execute(sql)
     sqlresult = curs.fetchall()
     curs.close()
@@ -20,7 +21,7 @@ def make_movie_list():
 def make_last_msg(user_key):
     curs = cnnt.mk_cursor()
     try:
-        sql =f'''SELECT * FROM dbtoday.KakaoMessage as KM Where user_key = '{user_key}' order by KM.timestamp desc, KM.index desc limit 1;'''
+        sql =f'''SELECT * FROM DBtoday.KakaoMessage as KM Where user_key = '{user_key}' order by KM.timestamp desc, KM.index desc limit 1;'''
         a = curs.execute(sql)
         sqlresult = curs.fetchone()
         curs.close()
@@ -41,7 +42,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = target
 db = SQLAlchemy(app)
 default_button_list = ["관객수 그래프 보기", "현재상영작 보기", "개봉예정작 보기", "장르별 현재상영작", "평점순 현재상영작"]
-
+graph_buttons = ["일주일", "이주일", "한달"]
 
 @app.route('/keyboard')
 def Keyboard():
@@ -61,7 +62,7 @@ def find_by_score():
     CASE WHEN viewer_score = 0 THEN round(ntz_score,2)
     ELSE round((ntz_score+viewer_score)/2,2)
     END AS average_score, giza_score
-        FROM dbtoday.MovieScore as ms
+        FROM DBtoday.MovieScore as ms
         INNER JOIN BaseMovieInfo as ba
         ON ms.movie_code = ba.movie_code
         INNER JOIN DetailedBaseMovieInfo as dm
@@ -81,6 +82,15 @@ def find_by_score():
         stringlist.append(string)
     final_string = "".join(stringlist)
     return namelist, final_string
+
+def insert_trend(section):
+    today = datetime.datetime.now().date()
+    insert_movie_audiance_num_per_date(today,section)
+    section = datetime.timedelta(section)
+    end_date = today - section
+    query_and_draw(start_date, end_date)
+    
+    return 
 
 def save_message(user_key, content):
     save_message = KakaoMessage(user_key,content)
@@ -117,15 +127,17 @@ def Message():
     elif content == u"관객수 그래프 보기":
         dataSend = {
             "message": {
-                "text": f"{user_key}님, 행복하세요."
+                "text": "며칠간격으로 그래프를 보여드릴까요?"
             },
             "keyboard":{
                 "type": "buttons",
-                    "buttons":default_button_list
+                    "buttons":graph_buttons
             }
 
         }
-
+    elif content == u"일주일" :
+      #  insert_trend(7)
+        dataSend = {'message' : {'text' : "확인^^"}}
     elif content == u"현재상영작 보기":
         dataSend = {
             "message": {
@@ -182,3 +194,4 @@ def Message():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000)
+
