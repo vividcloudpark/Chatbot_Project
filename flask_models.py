@@ -168,7 +168,7 @@ class KakaoMessage(db.Model):
     __tablename__ = 'KakaoMessage'
     index = db.Column(db.Integer, primary_key = True, autoincrement=True)
     user_key = db.Column(db.String(20), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.now())
+    timestamp = db.Column(db.TIMESTAMP, default=datetime.datetime.now())
     message = db.Column(db.Text)
 
     def __init__(self, user_key, message):

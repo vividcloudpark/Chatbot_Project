@@ -1,5 +1,5 @@
 {"users":[
   {"user":"root", "password":"database", "host":"localhost","port":"3306", "DB":"dbtoday","kobis_key":"430156241533f1d058c603178cc3ca0e"
   }],
-"aws":{"awshost" : "your_server_",
-      "awspassword":"1"}}
+"aws":{"awshost" : "clouddatabase.c03xxgdr7sqt.ap-northeast-2.rds.amazonaws.com",
+      "awspassword":"database"}}
