@@ -177,7 +177,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = target
 db = SQLAlchemy(app)
 default_button_list = ["관객수 그래프 보기", "현재상영작 보기", "개봉예정작 보기", "평점순 현재상영작"]
 
-graph_buttons = ["일주일", "이주일", "한달"] 
 
 @app.route('/keyboard')
 def Keyboard():
@@ -207,8 +206,9 @@ def draw_trend(section):
      
     today = today.strftime("%Y-%m-%d")
     end_date =  end_date.strftime("%Y-%m-%d")
-    
-    return today, end_date
+    graph_buttons = ["일주일", "이주일", "한달"]
+
+    return graph_buttons,today, end_date
     
 
 
@@ -251,8 +251,8 @@ def Message():
 
         }
 
-
     elif content == u"관객수 그래프 보기":
+        graph_buttons,_,_ = draw_trend(5)
         dataSend = {
             "message": {
                 "text": "며칠간격으로 그래프를 보여드릴까요?"
@@ -264,18 +264,18 @@ def Message():
 
         }
     elif content == u"일주일" :
-        start_date,end_date = draw_trend(7)
+        _,start_date,end_date = draw_trend(7)
         dataSend = {"url" : img_link.format(start_date,end_date),
                      "width" : 720,
 		      "height" : 630}
     elif content == u"이주일" : 
-        start_date,end_date = draw_trend(14)
+        _,start_date,end_date = draw_trend(14)
         dataSend = {"url" : imglink.format(start_date,end_date),
                      "width" : 720,
                       "height" : 630}
 
     elif content == u"한달":
-        start_date, end_date = draw_trend(30)
+        _,start_date, end_date = draw_trend(30)
         dataSend = {"url" :imglink.format(start_date,end_date),
                      "width" : 720,
                       "height" : 630}
