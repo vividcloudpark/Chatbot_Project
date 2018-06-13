@@ -269,28 +269,43 @@ def Message():
                      "message" : {"text" : "일주일간 관객수 추이입니다(10위 이하였던 날짜, 미개봉이었던 날짜에는 데이터가 존재하지 않습니다)",
                      "photo":{"url" : img_link.format(start_date,end_date),
                      "width" : 720,
-		      "height" : 630}}
+		      "height" : 630}},
+                      "keyboard":{
+                         "type": "buttons",
+                         "buttons":default_button_list
+            }
+
 		   }
 
     elif content == u"이주일" : 
         _,start_date,end_date = draw_trend(14)
         dataSend = {
-                     "message" : {"text" : "이주일간 관객수 추이입니다(10위 이하였던 날짜, 미개봉이었
-던 날짜에는 데이터가 존재하지 않습니다)",
+                     "message" : {"text" : "이주일간 관객수 추이입니다(10위 이하였던 날짜, 미개봉이었던 날짜에는 데이터가 존재하지 않습니다)",
                      "photo":{"url" : img_link.format(start_date,end_date),
                      "width" : 720,
-                      "height" : 630}}
+                      "height" : 630}},
+                      "keyboard":{
+                         "type": "buttons",
+                         "buttons":default_button_list
+            }
+
+
                    }
 
 
     elif content == u"한달":
         _,start_date, end_date = draw_trend(30)
         dataSend = {
-                     "message" : {"text" : "한달 간 관객수 추이입니다(10위 이하였던 날짜, 미개봉이었
-던 날짜에는 데이터가 존재하지 않습니다)",
+                     "message" : {"text" : "한달 간 관객수 추이입니다(10위 이하였던 날짜, 미개봉이었던 날짜에는 데이터가 존재하지 않습니다)",
                      "photo":{"url" : img_link.format(start_date,end_date),
                      "width" : 720,
-                      "height" : 630}}
+                      "height" : 630}}, 
+                      "keyboard":{
+                         "type": "buttons",
+                         "buttons":default_button_list
+            }
+
+
                    }
 
 
