@@ -29,6 +29,24 @@ def make_last_msg(user_key):
     except:
         return None
 
+def movie_detail_info(movie_name):
+    curs = cnnt.mk_cursor()
+    sql=f'''
+    SELECT bmi.movie_name_kor as '제목',dir.director_name_kor as '감독',dbmi.opendate as '개봉일',dbmi.flim_class as '관람가',dbmi.story as '개요'
+    FROM BaseMovieInfo as bmi
+    left join DetailedBaseMovieInfo as dbmi
+    on bmi.movie_code=dbmi.movie_code
+    left join DirectorOfMovie as dof
+    on dof.movie_code=bmi.movie_code
+    left join Director as dir
+    on dof.movie_director_code=dir.director_code
+    where movie_name_kor="{movie_name}"'''
+    a = curs.execute(sql)
+    sqlresult=curs.fetchone()
+    curs.close()
+    title,director,opendate,viewer,story = sqlresult
+    return title,director,opendate,viewer,story
+
 
 user, password, host, port, DB = cnnt.aws_basic_info()
 
@@ -51,7 +69,6 @@ def Keyboard():
     }
 
     return jsonify(dataSend)
-
 
 
 def find_by_score():
@@ -102,9 +119,10 @@ def Message():
     last_msg = make_last_msg(user_key)
 
     if last_msg in movie_list:
+        title,director,opendate,viewer,story = movie_detail_info(last_msg)
         dataSend = {
             "message": {
-                "text": f"{last_msg}에 대해서 찾아보셨나요?"
+                "text": f"제목 : {title} 감독 : {director} 개봉일 : {opendate} 등급 : {viewer} 개요 :{story}"
             },
             "keyboard":{
                 "type": "buttons",
@@ -117,7 +135,7 @@ def Message():
     elif content == u"관객수 그래프 보기":
         dataSend = {
             "message": {
-                "text": f"{user_key}님, 행복하세요."
+                "text": f"{user_key}님, 몇주간추세를 보고싶으세요?."
             },
             "keyboard":{
                 "type": "buttons",
