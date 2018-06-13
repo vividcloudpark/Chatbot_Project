@@ -6,6 +6,7 @@ import connections as cnnt
 from flask_models import *
 import datetime
 from show_movie_trend import *
+
 def make_movie_list():
     curs = cnnt.mk_cursor()
     sql = """SELECT movie_name_kor FROM DBtoday.BaseMovieInfo"""
@@ -30,7 +31,7 @@ def make_last_msg(user_key):
         return None
 
 
-user, password, host, port, DB = cnnt.local_baic_info()
+user, password, host, port, DB = cnnt.aws_basic_info()
 
 target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
 movie_list = make_movie_list()
@@ -86,9 +87,19 @@ def insert_trend(section):
     today = datetime.datetime.now().date()
     insert_movie_audiance_num_per_date(today,section)
     section = datetime.timedelta(section)
-    end_date = today - section
-    
+    end_date = today - section 
     return query_and_draw(today, end_date)
+
+
+def draw_trend(section):
+    today = datetime.datetime.now().date()
+    section = datetime.timedelta(section)
+    end_date = today - section
+
+    return today.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
+
+
+
 
 def save_message(user_key, content):
     save_message = KakaoMessage(user_key,content)
@@ -134,8 +145,23 @@ def Message():
 
         }
     elif content == u"일주일" :
-      #  insert_trend(7)
-        dataSend = {'message' : {'text' : "확인^^"}}
+        start_date,end_date = draw_trend(7)
+        dataSend = {"url" : f"./asset/image/{start_date}to{end_date}.png",
+                     "width" : 720,
+		      "height" : 630}
+    elif content == u"이주일" : 
+        start_date,end_date = draw_trend(14)
+        dataSend = {"url" : f"./asset/image/{start_date}to{end_date}.png",
+                     "width" : 720,
+                      "height" : 630}
+
+    elif content == u"한달":
+        start_date, end_date = draw_trend(30)
+        {"url" : f"./asset/image/{start_date}to{end_date}.png",
+                     "width" : 720,
+                      "height" : 630}
+
+    
     elif content == u"현재상영작 보기":
         dataSend = {
             "message": {

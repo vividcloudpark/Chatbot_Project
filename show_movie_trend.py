@@ -23,7 +23,7 @@ with open("config.json", "r", encoding="utf8") as f:
     json_data = json.loads(contents)
 
 kobis_key = json_data["users"][0]["kobis_key"]
-user, password, host, port, DB = cnnt.local_baic_info()
+user, password, host, port, DB = cnnt.aws_basic_info()
 
 
 
