@@ -10,7 +10,6 @@ import show_movie_trend as smt
 user, password, host, port, DB = cnnt.aws_basic_info()
 
 target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
-movie_list = make_movie_list()
 
 
 def make_movie_list():
@@ -23,6 +22,9 @@ def make_movie_list():
     for i in sqlresult:
         temp_list.append(i[0])
     return temp_list
+
+
+movie_list = make_movie_list()
 
 def make_last_msg(user_key):
     curs = cnnt.mk_cursor()
@@ -175,6 +177,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = target
 db = SQLAlchemy(app)
 default_button_list = ["관객수 그래프 보기", "현재상영작 보기", "개봉예정작 보기", "평점순 현재상영작"]
 
+graph_buttons = ["일주일", "이주일", "한달"] 
 
 @app.route('/keyboard')
 def Keyboard():
