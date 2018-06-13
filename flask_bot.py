@@ -189,20 +189,24 @@ def Keyboard():
 
 def insert_trend(section):
     today = datetime.datetime.now().date()
-    insert_movie_audiance_num_per_date(today,section)
+    smt.insert_movie_audiance_num_per_date(today,section)
     section = datetime.timedelta(section)
 
     end_date = today - section 
 
-    return query_and_draw(today, end_date)
+    return smt.query_and_draw(today, end_date)
 
 
 def draw_trend(section):
     today = datetime.datetime.now().date()
     section = datetime.timedelta(section)
     end_date = today - section
-
-    return today.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
+     
+    today = today.strftime("%Y-%m-%d")
+    end_date =  end_date.strftime("%Y-%m-%d")
+    
+    return today, end_date
+    
 
 
 
@@ -227,6 +231,8 @@ def Message():
     content = dataReceive['content']
     save_message(user_key, content)
     last_msg = make_last_msg(user_key)
+    img_link = "https://raw.githubusercontent.com/vividcloudpark/Chatbot_Project/master/asset/image/{0}to{1}.png"
+
 
     if last_msg in movie_list:
         moviecode,title,director,opendate,viewer,story,finalactor,finalgenre = movie_detail_info(last_msg)
@@ -256,18 +262,18 @@ def Message():
         }
     elif content == u"일주일" :
         start_date,end_date = draw_trend(7)
-        dataSend = {"url" : f"./asset/image/{start_date}to{end_date}.png",
+        dataSend = {"url" : img_link.format(start_date,end_date),
                      "width" : 720,
 		      "height" : 630}
     elif content == u"이주일" : 
         start_date,end_date = draw_trend(14)
-        dataSend = {"url" : f"./asset/image/{start_date}to{end_date}.png",
+        dataSend = {"url" : imglink.format(start_date,end_date),
                      "width" : 720,
                       "height" : 630}
 
     elif content == u"한달":
         start_date, end_date = draw_trend(30)
-        {"url" : f"./asset/image/{start_date}to{end_date}.png",
+        dataSend = {"url" :imglink.format(start_date,end_date),
                      "width" : 720,
                       "height" : 630}
 
