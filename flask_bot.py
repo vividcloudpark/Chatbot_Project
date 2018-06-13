@@ -5,7 +5,13 @@ import pymysql
 import connections as cnnt
 from flask_models import *
 import datetime
-from show_movie_trend import *
+import show_movie_trend as smt
+
+user, password, host, port, DB = cnnt.aws_basic_info()
+
+target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
+movie_list = make_movie_list()
+
 
 def make_movie_list():
     curs = cnnt.mk_cursor()
@@ -31,29 +37,62 @@ def make_last_msg(user_key):
         return None
 
 
-user, password, host, port, DB = cnnt.aws_basic_info()
 
-target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
-movie_list = make_movie_list()
-
-cur = cnnt.mk_cursor()
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = target
-db = SQLAlchemy(app)
-default_button_list = ["관객수 그래프 보기", "현재상영작 보기", "개봉예정작 보기", "장르별 현재상영작", "평점순 현재상영작"]
-graph_buttons = ["일주일", "이주일", "한달"]
-
-@app.route('/keyboard')
-def Keyboard():
-    dataSend = {
-        "type" : "buttons",
-        "buttons" : default_button_list
-    }
-
-    return jsonify(dataSend)
+def movie_detail_info(user_movie_name):
+    curs = cnnt.mk_cursor()
+    sql=f'''
+    SELECT bmi.movie_code, bmi.movie_name_kor as '제목',dir.director_name_kor as '감독',dbmi.opendate as '개봉일',dbmi.flim_class as '관람가',dbmi.story as '개요'
+    FROM BaseMovieInfo as bmi
+    left join DetailedBaseMovieInfo as dbmi
+    on bmi.movie_code=dbmi.movie_code
+    left join DirectorOfMovie as dof
+    on dof.movie_code=bmi.movie_code
+    left join Director as dir
+    on dof.movie_director_code=dir.director_code
+    where movie_name_kor="{user_movie_name}"'''
+    a = curs.execute(sql)
+    sqlresult=curs.fetchone()
+    curs.close()
+    moviecode,title,director,opendate,viewer,story = sqlresult
 
 
+    sql2=f'''SELECT bmi.movie_name_kor as '제목',act.actor_name_kor as '출연자'
+    from BaseMovieInfo as bmi
+    inner join ActorsOfMovie as aom
+    on aom.movie_code=bmi.movie_code
+    inner join Actors as act
+    on aom.movie_actor_code=act.actor_code
+    where movie_name_kor="{user_movie_name}"'''
+
+    curs = cnnt.mk_cursor()
+    b = curs.execute(sql2)
+    sql2result=curs.fetchall()
+    curs.close()
+
+    actorlist = []
+    for i in range(len(sql2result)):
+        actorlist.append(sql2result[i][1])
+    finalactor = ", ".join(actorlist)
+
+    curs = cnnt.mk_cursor()
+    sql3=f'''
+    SELECT bmi.movie_name_kor as '제목', gn.genre as '장르'
+    from BaseMovieInfo as bmi
+    inner join GenreOfMovie as gom
+    on gom.movie_code=bmi.movie_code
+    inner join Genre as gn
+    on gn.genre=gom.movie_genre
+    where movie_name_kor="{user_movie_name}"'''
+
+    c = curs.execute(sql3)
+    sql3result=curs.fetchall()
+    curs.close()
+    genrelist = []
+    for i in range(len(sql3result)):
+        genrelist.append(sql3result[i][1])
+    finalgenre = ",".join(genrelist)
+
+    return moviecode,title,director,opendate,viewer,story,finalactor,finalgenre
 
 def find_by_score():
     curs = cnnt.mk_cursor()
@@ -83,11 +122,78 @@ def find_by_score():
     final_string = "".join(stringlist)
     return namelist, final_string
 
+def currently_or_future_showing_movie(parameter):
+    if parameter == "curr":
+        banghang = "<"
+    else:
+        banghang = ">"
+
+    curs =cnnt.mk_cursor()
+    sql=f'''
+    SELECT bmi.movie_code, bmi.movie_name_kor, dbmi.opendate, sc.ntz_score
+    FROM BaseMovieInfo as bmi
+   inner join DetailedBaseMovieInfo as dbmi
+      on bmi.movie_code = dbmi.movie_code
+	inner join MovieScore as sc
+		on bmi.movie_code = sc.movie_code
+   inner join DirectorOfMovie as dom
+      on dom.movie_code = bmi.movie_code
+      where
+      (dbmi.opendate {banghang} date(now())) in (date(dbmi.opendate) > date_add(date(now()), interval -1 month))
+order by opendate desc limit 10;
+    '''
+    a = curs.execute(sql)
+    sqlresult = curs.fetchall()
+    curs.close()
+    contentslist = []
+    namelist = []
+    if banghang == ">":
+        for i in sqlresult:
+            name, opendate, score  = i[1], i[2], i[3]
+            namelist.append(name)
+            contents = f"{name} | 개봉 {opendate} | 평점  {score} \n"
+            contentslist.append(contents)
+        final_contents = "".join(contentslist)
+    else:
+        for i in sqlresult:
+            name, opendate = i[1], i[2]
+            namelist.append(name)
+            contents = f"{name} | 개봉예정 {opendate}  \n"
+            contentslist.append(contents)
+        final_contents = "".join(contentslist)
+    return namelist, final_contents
+
+user, password, host, port, DB = cnnt.aws_basic_info()
+
+target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
+movie_list = make_movie_list()
+
+cur = cnnt.mk_cursor()
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = target
+db = SQLAlchemy(app)
+default_button_list = ["관객수 그래프 보기", "현재상영작 보기", "개봉예정작 보기", "평점순 현재상영작"]
+
+
+@app.route('/keyboard')
+def Keyboard():
+    dataSend = {
+        "type" : "buttons",
+        "buttons" : default_button_list
+    }
+
+    return jsonify(dataSend)
+
+
+
 def insert_trend(section):
     today = datetime.datetime.now().date()
     insert_movie_audiance_num_per_date(today,section)
     section = datetime.timedelta(section)
+
     end_date = today - section 
+
     return query_and_draw(today, end_date)
 
 
@@ -112,6 +218,8 @@ def save_message(user_key, content):
 
 
 
+
+
 @app.route('/message', methods=['POST'])
 def Message():
     dataReceive = request.get_json()
@@ -121,9 +229,11 @@ def Message():
     last_msg = make_last_msg(user_key)
 
     if last_msg in movie_list:
+        moviecode,title,director,opendate,viewer,story,finalactor,finalgenre = movie_detail_info(last_msg)
+        naverlink = f"https://movie.naver.com/movie/bi/mi/basic.nhn?code={moviecode}"
         dataSend = {
             "message": {
-                "text": f"{last_msg}에 대해서 찾아보셨나요?"
+                "text": f"제목 : {title} \n개봉일 : {opendate} \n감독 : {director} \n출연자 : {finalactor}  \n장르 : {finalgenre}\n등급 : {viewer} \n개요 :{story}\n상세링크:{naverlink}"
             },
             "keyboard":{
                 "type": "buttons",
@@ -163,25 +273,27 @@ def Message():
 
     
     elif content == u"현재상영작 보기":
+        namelist, final_contents = currently_or_future_showing_movie("curr")
         dataSend = {
             "message": {
-                "text": "현재상영작 보기"
-            }
-        }
+                "text": f"{final_contents}"
+            },
+            "keyboard":{
+                "type": "buttons",
+                    "buttons":namelist
+        }}
 
     elif content == u"개봉예정작 보기":
+        namelist, final_contents = currently_or_future_showing_movie("future")
         dataSend = {
             "message": {
-                "text": "개봉예정작 보기"
-            }
-        }
+                "text": f"{final_contents}"
+            },
+            "keyboard":{
+                "type": "buttons",
+                    "buttons":namelist
+        }}
 
-    elif content == u"장르별 현재상영작":
-        dataSend = {
-            "message": {
-                "text": "장르별 현재상영작"
-            }
-        }
 
     elif content == u"평점순 현재상영작":
         namelist, final_string = find_by_score()
@@ -218,4 +330,3 @@ def Message():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port = 5000)
-
