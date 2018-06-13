@@ -8,18 +8,20 @@ import pymysql
 import datetime
 import connections as cnnt
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+# from flask import Flask
+# from flask_sqlalchemy import SQLAlchemy
 
 
 user, password, host, port, DB = cnnt.aws_basic_info()
 
 target = f'mysql+pymysql://{user}:{password}@{host}:{port}/{DB}?charset=utf8'
-
-app.config['SQLALCHEMY_DATABASE_URI'] = target
-db = SQLAlchemy(app)
-
+engine = create_engine(target)
+Session = sessionmaker(bind=engine)
 Base = declarative_base()
+
+# app.config['SQLALCHEMY_DATABASE_URI'] = target
+# db = SQLAlchemy(app)
+
 
 
 class BaseMovieInfo(Base):
@@ -159,3 +161,6 @@ class KakaoMessage(Base):
     def __init__(self, user_key, message):
         self.user_key = user_key
         self.message = message
+
+
+Base.metadata.create_all(engine)
