@@ -35,11 +35,9 @@ Base = declarative_base()
 Base.metadata.create_all(engine)
 conn= engine.connect()
 
-#영화명, 관객수, 조회일 크롤링해온다음 디비에 저장시킴, 저장시킨걸 데이터프레임으로 보여줌
+# #영화명, 관객수, 조회일 크롤링해온다음 디비에 저장시킴, 저장시킨걸 데이터프레임으로 보여줌
 def insert_movie_audiance_num_per_date(input_date, time_section):
     #params : week or month
-
-    # input_date = datetime.datetime.strptime(input_date,'%Y-%m-%d')
     searching_date = []
 
     if not input_date:
@@ -51,43 +49,31 @@ def insert_movie_audiance_num_per_date(input_date, time_section):
         time_section -= 1
 
 
-    movie_info_per_date = {}
     for date_time in searching_date:
         base_url = urllib.request.urlopen(f"http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key={kobis_key}&targetDt={date_time}")
         sources = json.load(base_url)
+        
         movie_infos = sources["boxOfficeResult"]['dailyBoxOfficeList']
 
-        audiacc_per_movie = {}
         for movie_info in movie_infos:
-            audiacc_per_movie[movie_info['movieNm']] = movie_info['audiCnt']
-        movie_info_per_date[date_time] = audiacc_per_movie
-    movie_table = pd.DataFrame(movie_info_per_date)
-    
-    insert_into_db(movie_table)
-    return movie_table
-
-#인섵하는 함수. 헬프함수
-def insert_into_db(movie_table):
-    movie_table = pd.DataFrame(movie_table).fillna(-1)
-    for movie_name, section_audi in zip(movie_table.index, movie_table.values):
-        for search_date,today_audi in zip(movie_table.keys(), section_audi):
-            search_date = datetime.datetime.strptime(search_date,'%Y%M%d').date()
-            if  today_audi == -1 or session.query(exists().where(and_(KobisMovieInfo.movie_name == movie_name,KobisMovieInfo.search_date == search_date))).scalar():
-                print("Data already exists")
+            movie_name= movie_info["movieNm"]
+            search_date = date_time 
+            audiacc = movie_info["audiAcc"]
+            if  session.query(exists().where(and_(KobisMovieInfo.movie_name == movie_name,KobisMovieInfo.search_date == search_date))).scalar():
+                print("DataExists")
             else:
-                add_month =  monthdelta.monthdelta(5)
-                add_movie_info = KobisMovieInfo(movie_name, search_date+add_month, today_audi)
+                add_movie_info = KobisMovieInfo(movie_info["movieNm"], date_time, movie_info["audiAcc"])
                 session.merge(add_movie_info)
                 session.commit()
-                print("Inserted Succesfully!")
+                print("value",movie_name, search_date, audiacc,"Inserted" )
+    return 
 
-    return "Done work"
 
 
 #디비에있는것 그래프로 그려줌
 def query_and_draw(start_date, end_date):
-    start_date = start_date.strftime("%Y-%m-%d")
-    end_date = end_date.strftime("%Y-%m-%d")
+#     start_date = start_date.strftime("%Y-%m-%d")
+#     end_date = end_date.strftime("%Y-%m-%d")
     query = pd.DataFrame(session.query(KobisMovieInfo.movie_name, KobisMovieInfo.search_date,KobisMovieInfo.today_audi).filter(start_date >= KobisMovieInfo.search_date).filter(KobisMovieInfo.search_date >= end_date).all())
     movie_table =  pd.DataFrame(index = list(set(query.movie_name)), columns = sorted(list(set(query.search_date))))
 

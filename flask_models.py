@@ -1,7 +1,6 @@
 import pymysql
 import datetime
 import connections as cnnt
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
