@@ -88,7 +88,7 @@ def insert_trend(section):
     insert_movie_audiance_num_per_date(today,section)
     section = datetime.timedelta(section)
     end_date = today - section
-    query_and_draw(start_date, end_date)
+    query_and_draw(today, end_date)
     
     return 
 
