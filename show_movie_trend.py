@@ -52,21 +52,21 @@ def insert_movie_audiance_num_per_date(input_date, time_section):
     for date_time in searching_date:
         base_url = urllib.request.urlopen(f"http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key={kobis_key}&targetDt={date_time}")
         sources = json.load(base_url)
-        
+
         movie_infos = sources["boxOfficeResult"]['dailyBoxOfficeList']
 
         for movie_info in movie_infos:
             movie_name= movie_info["movieNm"]
-            search_date = date_time 
-            audiacc = movie_info["audiAcc"]
+            search_date = date_time
+            audiCnt = movie_info["audiCnt"]
             if  session.query(exists().where(and_(KobisMovieInfo.movie_name == movie_name,KobisMovieInfo.search_date == search_date))).scalar():
                 print("DataExists")
             else:
-                add_movie_info = KobisMovieInfo(movie_info["movieNm"], date_time, movie_info["audiAcc"])
+                add_movie_info = KobisMovieInfo(movie_info["movieNm"], date_time, movie_info["audiCnt"])
                 session.merge(add_movie_info)
                 session.commit()
-                print("value",movie_name, search_date, audiacc,"Inserted" )
-    return 
+                print("value",movie_name, search_date, audiCnt,"Inserted" )
+    return
 
 
 
