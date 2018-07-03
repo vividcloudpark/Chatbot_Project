@@ -2,6 +2,6 @@
    {"user":"root", "password":"shin1346", "host":"localhost","port":"3306", "DB":"DBtoday","kobis_key":"430156241533f1d058c603178cc3ca0e"
    }],
  "aws":{"user":"hyuna1615",
-   "awshost" : "db-bot.cvvog6yfp5in.ap-northeast-2.rds.amazonaws.com",
+   "awshost" : "moviebot.cvvog6yfp5in.ap-northeast-2.rds.amazonaws.com",
        "awspassword":"shin~134679"}}
 
