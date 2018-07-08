@@ -138,8 +138,6 @@ def currently_or_future_showing_movie(parameter):
       on bmi.movie_code = dbmi.movie_code
 	inner join MovieScore as sc
 		on bmi.movie_code = sc.movie_code
-   inner join DirectorOfMovie as dom
-      on dom.movie_code = bmi.movie_code
       where
       (dbmi.opendate {banghang} date(now())) in (date(dbmi.opendate) > date_add(date(now()), interval -1 month))
 order by opendate desc limit 10;
