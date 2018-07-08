@@ -147,7 +147,7 @@ order by opendate desc limit 10;
     curs.close()
     contentslist = []
     namelist = []
-    if banghang == ">":
+    if banghang == "<":
         for i in sqlresult:
             name, opendate, score  = i[1], i[2], i[3]
             namelist.append(name)
